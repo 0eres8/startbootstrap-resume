@@ -1,3 +1,67 @@
 ---
-# tasks file for kubernetes
-1
+- name:  Update Cache
+  apt:
+    update_cache: yes
+
+- name: Disable all swap devices and files at runtime
+  shell: swapoff -a
+  become: yes
+
+- name: Comment out lines that start with /swap in /etc/fstab
+  replace:
+    path: /etc/fstab
+    regexp: '^(/swap.*)'
+    replace: '# \1'
+  become: yes
+
+- name: Create the file containerd.conf if it does not exist
+  file:
+    path: /etc/modules-load.d/containerd.conf
+    state: touch                   
+    mode: '0644'                   
+    owner: root                    
+    group: root
+
+- name: Add some lines to containerd.conf
+  lineinfile:
+    path: /etc/modules-load.d/containerd.conf  
+    line: "{{ item }}"                            
+    create: yes                                
+    state: present
+  loop:
+    - overlay
+    - br_netfilter                                                                     
+
+- name: Create kubernetes.conf file if it does not exist
+  file:
+    path: /etc/sysctl.d/kubernetes.conf
+    state: touch                   
+    mode: '0644'                   
+    owner: root                    
+    group: root
+
+- name: Add some lines to kubernetes.conf
+  lineinfile:
+    path: /etc/sysctl.d/kubernetes.conf  
+    line: "{{ item }}"                            
+    create: yes                                
+    state: present
+  loop:
+    - "net.bridge.bridge-nf-call-ip6tables = 1"
+    - "net.bridge.bridge-nf-call-iptables = 1"
+    - "net.ipv4.ip_forward = 1"
+
+- name: Run sysctl --system to apply kernel settings
+  command: sysctl --system
+  become: yes
+
+- name: Install required software packages on all nodes
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - curl
+    - gnupg2
+    - software-properties-common
+    - apt-transport-https
+    - ca-certificates

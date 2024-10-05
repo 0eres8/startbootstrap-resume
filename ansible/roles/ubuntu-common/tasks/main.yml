@@ -1,0 +1,21 @@
+---
+
+- name: Update the APT package cache
+  apt:
+    update_cache: yes
+
+- name: Install default packages
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - htop
+    - ncdu
+    - net-tools
+    - apt-transport-https
+    - vim
+    - cron
+    - unattended-upgrades
+    - python3
+    - python-is-python3
+  become: yes
