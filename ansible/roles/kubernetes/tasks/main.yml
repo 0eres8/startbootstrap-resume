@@ -1,3 +1,6 @@
 ---
-- name: Include install_kubernetes.yml on all hosts
-  include_tasks: install_kubernetes.yml
+#- name: Include install_kubernetes.yml on all hosts
+#  include_tasks: install_kubernetes.yml
+
+- name: Include configure_kubernetes.yml on all hosts
+  include_tasks: configure_kubernetes.yml

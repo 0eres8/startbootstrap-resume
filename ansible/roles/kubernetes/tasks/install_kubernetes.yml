@@ -98,6 +98,16 @@
     name: containerd.io
     state: present
 
+- name: Configure containerd to start using systemd as cgroup
+  shell: |
+    containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
+  become: yes
+
+- name: Update SystemdCgroup to true in /etc/containerd/config.toml
+  shell: |
+    sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+  become: yes
+
 - name: Restart containerd service
   systemd:
     name: containerd

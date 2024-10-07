@@ -1,2 +1,2 @@
 ---
-# vars file for kubernetes
+k8s_version: 1.31

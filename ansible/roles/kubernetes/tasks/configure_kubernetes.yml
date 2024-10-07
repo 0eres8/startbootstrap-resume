@@ -1,0 +1,15 @@
+---
+#- name: Initialize the Cluster
+#  command: kubeadm init
+#  when: "'k8s-controllers' in group_names"
+#  become: yes
+
+- name: Run kubeadm token create --print-join-command and register output
+  shell: kubeadm token create --print-join-command
+  register: join_command_output
+  when: "'k8s-controllers' in group_names"
+
+- name: Debug the output of kubeadm join command
+  debug:
+    msg: "{{ join_command_output.stdout }}"
+  when: "'k8s-controllers' in group_names"
