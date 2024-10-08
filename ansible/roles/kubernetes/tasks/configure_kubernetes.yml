@@ -4,6 +4,17 @@
 #  when: "'k8s-controllers' in group_names"
 #  become: yes
 
+- name: Create .kube folder
+  file:
+    dest: "{{ home }}/.kube"
+    mode: directory
+    owner: "{{ k8s_user }}"
+    group: "{{ k8s_user}}"
+
+#   mkdir -p $HOME/.kube
+#  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+#  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
 - name: Run kubeadm token create --print-join-command and register output
   shell: kubeadm token create --print-join-command
   register: join_command_output
