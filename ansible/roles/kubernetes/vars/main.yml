@@ -2,3 +2,4 @@
 k8s_version: 1.31
 home: /home/robby
 k8s_user: robby
+calico_network_plugin: https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml

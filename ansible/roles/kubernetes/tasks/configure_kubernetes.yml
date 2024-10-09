@@ -7,20 +7,46 @@
 - name: Create .kube folder
   file:
     dest: "{{ home }}/.kube"
-    mode: directory
     owner: "{{ k8s_user }}"
-    group: "{{ k8s_user}}"
-
-#   mkdir -p $HOME/.kube
-#  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-#  sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-- name: Run kubeadm token create --print-join-command and register output
-  shell: kubeadm token create --print-join-command
-  register: join_command_output
+    group: "{{ k8s_user }}"
+    state: directory
   when: "'k8s-controllers' in group_names"
 
-- name: Debug the output of kubeadm join command
-  debug:
-    msg: "{{ join_command_output.stdout }}"
+- name: Copy file with owner and permissions
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ home }}/.kube/config"
+    owner: "{{ k8s_user }}"
+    group: "{{ k8s_user }}"
+    mode: '0644'
+    remote_src: yes
   when: "'k8s-controllers' in group_names"
+
+#- name: Run kubeadm token create --print-join-command and register output
+#  shell: kubeadm token create --print-join-command
+#  register: join_command
+#  when: "'k8s-controllers' in group_names"
+
+#- name: Debug the output of kubeadm join command
+#  debug:
+#    msg: "{{ join_command.stdout }}"
+#  when: "'k8s-controllers' in group_names"
+
+- name: Create the join command vatiable
+  set_fact:
+    join_command: "kubeadm join 172.16.88.204:6443 --token z0773h.tqa3c19cparcrkl3 --discovery-token-ca-cert-hash sha256:257eb5b937f1326e78ae58eac5c70082c230721321d60a7b1fd7d16995720a46 "
+
+#- name: Make nodes join the cluster
+#  shell: "{{ join_command }}"
+#  when: "'k8s-workers' in group_names"
+#  become: yes
+
+# onderstaande werkt noet niet - andere maar naar kijken
+- name: Define the Calico install command as a variable
+  set_fact:
+    install_calico: "kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml"
+
+- name: Install Calico network-plugin on the controller
+  shell: "{{ install_calico }} --validate=false"
+  when: "'k8s-controllers' in group_names"
+  become: yes
